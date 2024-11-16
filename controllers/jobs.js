@@ -1,5 +1,13 @@
+import JobModel from "../models/Job.js";
+import { StatusCodes } from "http-status-codes";
+import { BadRequestError, NotFoundError } from "../errors/index.js";
+
 const getAllJobs = async (req, res) => {
-  res.send("all jobs");
+  const jobs = await JobModel.find({ createdBy: req.user.userId }).sort(
+    "createdAt"
+  );
+
+  res.status(StatusCodes.OK).json({ jobs, count: jobs.length });
 };
 
 const getJob = async (req, res) => {
@@ -7,7 +15,9 @@ const getJob = async (req, res) => {
 };
 
 const createJob = async (req, res) => {
-  res.json(req.user);
+  req.body.createdBy = req.user.userId;
+  const job = await JobModel.create(req.body);
+  res.status(StatusCodes.CREATED).json({ job });
 };
 
 const updateJob = async (req, res) => {
