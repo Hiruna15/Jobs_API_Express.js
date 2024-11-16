@@ -1,4 +1,3 @@
-import UserModel from "../models/User";
 import jwt from "jsonwebtoken";
 import { UnauthenticatedError } from "../errors/index.js";
 
