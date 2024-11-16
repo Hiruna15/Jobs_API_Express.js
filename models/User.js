@@ -1,11 +1,13 @@
 import mongoose from "mongoose";
 const { Schema } = mongoose;
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 const UserSchema = new Schema({
   name: {
     type: String,
     required: [true, "Name must be provided"],
-    minLength: 3,
+    minLength: [3, "less than the min length 3"],
     maxLength: 50,
   },
   email: {
@@ -22,9 +24,23 @@ const UserSchema = new Schema({
     type: String,
     required: [true, "Password must be provided"],
     minLength: 6,
-    maxLength: 15,
   },
 });
+
+UserSchema.pre("save", async function () {
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+});
+
+UserSchema.methods.generateJWT = function () {
+  return jwt.sign(
+    { userId: this._id_, name: this.name },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: process.env.JWT_LIFETIME,
+    }
+  );
+};
 
 const UserModel = mongoose.model("User", UserSchema);
 
